@@ -7,3 +7,7 @@ server/.env
 backend/*/.env
 backend/*/node_modules
 mobile/.expo
+node_modules/
+.env
+node_modules/
+.env
