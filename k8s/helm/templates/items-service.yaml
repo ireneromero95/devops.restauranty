@@ -1,0 +1,11 @@
+appVersion: v1
+kind: Service
+metadata:
+  name: items
+spec:
+  selector:
+    app: items
+  ports:
+  - protocol: TCP
+    port: 3003
+    targetPort: 3003

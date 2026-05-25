@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: items-deployment
+  labels:
+    app: items
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: items
+  template:
+    metadata:
+      labels:
+        app: items
+    spec:
+      containers:
+      - name: items
+        image: ireneandjoaoacr.azurecr.io/restauranty-items:latest
+        ports:
+        - containerPort: 3003
+        env:
+        - name: PORT
+          value: "3003"
+        - name: SECRET
+          value: "ireneandjoao_secret_key"
+        - name: MONGODB_URI
+          value: "mongodb://localhost:27017/restauranty"
