@@ -1,0 +1,102 @@
+name: Restauranty CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # ============================================================
+    # Checkout
+    # ============================================================
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # ============================================================
+    # Docker Buildx
+    # ============================================================
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # ============================================================
+    # Login to Azure Container Registry
+    # ============================================================
+    - name: Log in to ACR
+      uses: docker/login-action@v3
+      with:
+        registry: ireneandjoaoacr.azurecr.io
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    # ============================================================
+    # Build & Push Microservices
+    # ============================================================
+    - name: Build and push Auth image
+      uses: docker/build-push-action@v3
+      with:
+        context: ./backend/auth
+        file: ./backend/auth/Dockerfile
+        push: true
+        tags: ireneandjoaoacr.azurecr.io/restauranty-auth:latest
+
+    - name: Build and push Discounts image
+      uses: docker/build-push-action@v3
+      with:
+        context: ./backend/discounts
+        file: ./backend/discounts/Dockerfile
+        push: true
+        tags: ireneandjoaoacr.azurecr.io/restauranty-discounts:latest
+
+    - name: Build and push Items image
+      uses: docker/build-push-action@v3
+      with:
+        context: ./backend/items
+        file: ./backend/items/Dockerfile
+        push: true
+        tags: ireneandjoaoacr.azurecr.io/restauranty-items:latest
+
+    - name: Build and push Frontend image
+      uses: docker/build-push-action@v3
+      with:
+        context: ./client
+        file: ./client/Dockerfile
+        push: true
+        tags: ireneandjoaoacr.azurecr.io/restauranty-client:latest
+
+    # ============================================================
+    # Configure Azure + kubectl
+    # ============================================================
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Set AKS context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: IreneandJoao
+        cluster-name: IreneandJoao
+
+    # ============================================================
+    # Deploy to AKS
+    # ============================================================
+    - name: Deploy to AKS
+      run: |
+        kubectl set image deployment/auth-deployment auth=ireneandjoaoacr.azurecr.io/restauranty-auth:latest
+        kubectl set image deployment/discounts-deployment discounts=ireneandjoaoacr.azurecr.io/restauranty-discounts:latest
+        kubectl set image deployment/items-deployment items=ireneandjoaoacr.azurecr.io/restauranty-items:latest
+        kubectl set image deployment/frontend-deployment frontend=ireneandjoaoacr.azurecr.io/restauranty-client:latest
+
+    - name: Verify rollout
+      run: |
+        kubectl rollout status deployment/auth-deployment
+        kubectl rollout status deployment/discounts-deployment
+        kubectl rollout status deployment/items-deployment
+        kubectl rollout status deployment/frontend-deployment
