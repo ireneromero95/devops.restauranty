@@ -97,7 +97,7 @@ jobs:
 
     - name: Restart deployments
       run: |
-        kubectl rollout restart deployment/auth-deployment
-        kubectl rollout restart deployment/discounts-deployment
-        kubectl rollout restart deployment/items-deployment
-        kubectl rollout restart deployment/frontend-deployment
+        kubectl rollout restart deployment/auth
+        kubectl rollout restart deployment/discounts
+        kubectl rollout restart deployment/items
+        kubectl rollout restart deployment/frontend
