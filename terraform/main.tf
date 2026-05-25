@@ -19,7 +19,7 @@ resource "azurerm_kubernetes_cluster" "k8s" {
 
   default_node_pool {
     name       = "agentpool"
-    vm_size    = "Standard_DS2_v4"
+    vm_size    = "Standard_D2s_v4"
     node_count = 3
   }
 
@@ -49,8 +49,4 @@ resource "azurerm_role_assignment" "aks_acr" {
   role_definition_name             = "AcrPull"
   scope                            = azurerm_container_registry.acr.id
   skip_service_principal_aad_check = true
-}
-
-output "acr_login_server" {
-  value = azurerm_container_registry.acr.login_server
 }
