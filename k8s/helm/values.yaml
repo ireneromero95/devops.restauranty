@@ -2,14 +2,14 @@
 # Global
 # ============================================================
 acr: ireneandjoaoacr.azurecr.io
-secret: "ireneandjoao_secret_key"
- 
+secret: 'ireneandjoao_secret_key'
+
 # ============================================================
 # MongoDB
 # ============================================================
 mongodb:
-  uri: "mongodb://localhost:27017/restauranty"
- 
+  uri: 'mongodb://localhost:27017/restauranty'
+
 # ============================================================
 # Microservices
 # ============================================================
@@ -18,19 +18,19 @@ auth:
   tag: latest
   port: 3001
   replicas: 1
- 
+
 discounts:
   image: ireneandjoaoacr.azurecr.io/restauranty-discounts
   tag: latest
   port: 3002
   replicas: 1
- 
+
 items:
   image: ireneandjoaoacr.azurecr.io/restauranty-items
   tag: latest
   port: 3003
   replicas: 1
- 
+
 # ============================================================
 # Frontend
 # ============================================================
@@ -39,3 +39,4 @@ frontend:
   tag: latest
   port: 80
   replicas: 1
+  serverUrl: 'http://localhost:80' #We have to change this when we have an ingress value

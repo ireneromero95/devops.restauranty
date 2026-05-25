@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discounts
+spec:
+  replicas: {{ .Values.discounts.replicas }}
+  selector: 
+    matchLabels:
+      app: discounts
+  template:
+    metadata:
+      labels:
+        app: discounts
+    spec:
+      containers:
+        - name: discounts
+          image: {{ .Values.discounts.image }}:{{ .Values.discounts.tag}}
+          ports:
+            - containerPort: {{ .Values.discounts.port}}
+          env:
+            - name: PORT 
+              value: "{{ .Values.discounts.port }}"
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: MONGODB_URI
+            - name: SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: SECRET
+            - name: CLOUD_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: CLOUD_NAME
+            - name: CLOUD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: CLOUD_API_KEY
+            - name: CLOUD_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: CLOUD_API_SECRET
+            
