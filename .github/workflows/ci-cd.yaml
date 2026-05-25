@@ -87,16 +87,26 @@ jobs:
     # ============================================================
     # Deploy to AKS
     # ============================================================
-    - name: Deploy to AKS
-      run: |
-        kubectl set image deployment/auth-deployment auth=ireneandjoaoacr.azurecr.io/restauranty-auth:latest
-        kubectl set image deployment/discounts-deployment discounts=ireneandjoaoacr.azurecr.io/restauranty-discounts:latest
-        kubectl set image deployment/items-deployment items=ireneandjoaoacr.azurecr.io/restauranty-items:latest
-        kubectl set image deployment/frontend-deployment frontend=ireneandjoaoacr.azurecr.io/restauranty-client:latest
+    # - name: Deploy to AKS
+    #   run: |
+    #     kubectl set image deployment/auth-deployment auth=ireneandjoaoacr.azurecr.io/restauranty-auth:latest
+    #     kubectl set image deployment/discounts-deployment discounts=ireneandjoaoacr.azurecr.io/restauranty-discounts:latest
+    #     kubectl set image deployment/items-deployment items=ireneandjoaoacr.azurecr.io/restauranty-items:latest
+    #     kubectl set image deployment/frontend-deployment frontend=ireneandjoaoacr.azurecr.io/restauranty-client:latest
 
-    - name: Verify rollout
+    # - name: Verify rollout
+    #   run: |
+    #     kubectl rollout status deployment/auth-deployment
+    #     kubectl rollout status deployment/discounts-deployment
+    #     kubectl rollout status deployment/items-deployment
+    #     kubectl rollout status deployment/frontend-deployment
+    - name: Update Helm dependencies
+      run: helm dependency update k8s/helm
+
+    - name: Deploy to AKS with Helm
       run: |
-        kubectl rollout status deployment/auth-deployment
-        kubectl rollout status deployment/discounts-deployment
-        kubectl rollout status deployment/items-deployment
-        kubectl rollout status deployment/frontend-deployment
+        helm upgrade --install restauranty k8s/helm \
+          --set auth.tag=latest \
+          --set discounts.tag=latest \
+          --set items.tag=latest \
+          --set frontend.tag=latest
