@@ -5,7 +5,7 @@ metadata:
   labels:
     app: items
 spec:
-  replicas: 1
+  replicas: {{ .Values.items.replicas }}
   selector:
     matchLabels:
       app: items
@@ -15,14 +15,35 @@ spec:
         app: items
     spec:
       containers:
-      - name: items
-        image: ireneandjoaoacr.azurecr.io/restauranty-items:latest
-        ports:
-        - containerPort: 3003
-        env:
-        - name: PORT
-          value: "3003"
-        - name: SECRET
-          value: "ireneandjoao_secret_key"
-        - name: MONGODB_URI
-          value: "mongodb://localhost:27017/restauranty"
+        - name: items
+          image: "{{ .Values.items.image }}:{{ .Values.items.tag }}"
+          ports:
+            - containerPort: {{ .Values.items.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.items.port }}"
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: MONGODB_URI
+            - name: SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: SECRET
+            - name: CLOUD_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: CLOUD_NAME
+            - name: CLOUD_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: CLOUD_API_KEY
+            - name: CLOUD_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: restauranty-secrets
+                  key: CLOUD_API_SECRET

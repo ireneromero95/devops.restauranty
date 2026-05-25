@@ -7,6 +7,6 @@ spec:
     app: discounts
   ports:
     - protocol: TCP
-      port: { { .Values.discounts.port } }
-      targetPort: { { .Values.discounts.port } }
+      port: {{ .Values.discounts.port }}
+      targetPort: {{ .Values.discounts.port }}
   type: ClusterIP
