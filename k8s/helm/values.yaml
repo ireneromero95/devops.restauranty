@@ -1,0 +1,41 @@
+# ============================================================
+# Global
+# ============================================================
+acr: ireneandjoaoacr.azurecr.io
+secret: "ireneandjoao_secret_key"
+ 
+# ============================================================
+# MongoDB
+# ============================================================
+mongodb:
+  uri: "mongodb://localhost:27017/restauranty"
+ 
+# ============================================================
+# Microservices
+# ============================================================
+auth:
+  image: ireneandjoaoacr.azurecr.io/restauranty-auth
+  tag: latest
+  port: 3001
+  replicas: 1
+ 
+discounts:
+  image: ireneandjoaoacr.azurecr.io/restauranty-discounts
+  tag: latest
+  port: 3002
+  replicas: 1
+ 
+items:
+  image: ireneandjoaoacr.azurecr.io/restauranty-items
+  tag: latest
+  port: 3003
+  replicas: 1
+ 
+# ============================================================
+# Frontend
+# ============================================================
+frontend:
+  image: ireneandjoaoacr.azurecr.io/restauranty-client
+  tag: latest
+  port: 80
+  replicas: 1
