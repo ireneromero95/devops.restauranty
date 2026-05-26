@@ -39,7 +39,7 @@ frontend:
   tag: latest
   port: 80
   replicas: 1
-  serverUrl: 'http://localhost:80' #We have to change this when we have an ingress value
+  serverUrl: "http://restauranty-ij.az.ironlabs.online"
 
 # ============================================================
 # Prometheus
