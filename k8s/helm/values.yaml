@@ -47,4 +47,7 @@ frontend:
 prometheus:
   server:
     persistVolume:
-      enabled: false
+      enabled: true
+      size: 8Gi
+      storageClass: "managed-csi"
+      
