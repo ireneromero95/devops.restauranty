@@ -30,6 +30,7 @@ echo "export DNS_CLIENT_SECRET=${CLIENT_SECRET}" >> /tmp/dns-sp-env.sh
 echo ""
 echo "==> Creating azuredns-config secret..."
 kubectl create secret generic azuredns-config \
+  --namespace external-dns \
   --from-literal=client-secret="${CLIENT_SECRET}" \
   --dry-run=client -o yaml | kubectl apply -f -
 
