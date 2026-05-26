@@ -60,3 +60,18 @@ prometheus:
     - job_name: 'restauranty-items'
       static_configs:
         - targets: ['items.default.svc.cluster.local:3003']
+
+# ============================================================
+# Grafana
+# =====
+grafana:
+  enabled: true
+  adminPassword: 'restauranty123'
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://restauranty-prometheus-server:80
+          isDefault: true
