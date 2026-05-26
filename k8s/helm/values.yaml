@@ -50,20 +50,20 @@ prometheus:
       enabled: true
       size: 8Gi
       storageClass: 'default'
-      serverFiles:
-        prometheus.yml:
-          global:
-            scrape_interval: 15s
-          scrape_configs:
-            - job_name: 'restauranty-auth'
-              static_configs:
-                - targets: ['auth:3001']
-            - job_name: 'restauranty-discounts'
-              static_configs:
-                - targets: ['discounts:3002']
-            - job_name: 'restauranty-items'
-              static_configs:
-                - targets: ['items:3003']
-            - job_name: 'restauranty-frontend'
-              static_configs:
-                - targets: ['frontend:80']
+    serverFiles:
+      prometheus.yml:
+        global:
+          scrape_interval: 15s
+        scrape_configs:
+          - job_name: 'restauranty-auth'
+            static_configs:
+              - targets: ['auth:3001']
+          - job_name: 'restauranty-discounts'
+            static_configs:
+              - targets: ['discounts:3002']
+          - job_name: 'restauranty-items'
+            static_configs:
+              - targets: ['items:3003']
+          - job_name: 'restauranty-frontend'
+            static_configs:
+              - targets: ['frontend:80']
