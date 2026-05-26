@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SUBSCRIPTION_ID="daf9c53c-7096-4293-9bb1-f7ad8263db1a"
+SUBSCRIPTION_ID="903386a5-cfc1-4cac-8302-11a1e1410051"
+# SUBSCRIPTION_ID="daf9c53c-7096-4293-9bb1-f7ad8263db1a"
 TENANT_ID="84f58ce9-43c8-4932-b908-591a8a3007d3"
-CLIENT_ID="1618f74d-7a75-4ced-898e-c23a809dae0d"
 RESOURCE_GROUP="DefaultResourceGroup-DEWC"
 DNS_ZONE="az.ironlabs.online"
 ACME_EMAIL="finkry@gmail.com"
+
+CLIENT_ID=$(kubectl get secret azuredns-config -n cert-manager -o jsonpath='{.data.client-id}' | base64 --decode)
+CLIENT_SECRET=$(kubectl get secret azuredns-config -n cert-manager -o jsonpath='{.data.client-secret}' | base64 --decode)
 
 # ── Staging issuer ─────────────────────────────────────────────────────────────
 echo "==> Creating letsencrypt-staging ClusterIssuer..."
