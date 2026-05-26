@@ -64,6 +64,3 @@ prometheus:
           - job_name: 'restauranty-items'
             static_configs:
               - targets: ['items:3003']
-          - job_name: 'restauranty-frontend'
-            static_configs:
-              - targets: ['frontend:80']
