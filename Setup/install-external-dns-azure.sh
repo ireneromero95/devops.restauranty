@@ -13,7 +13,7 @@ kubectl create namespace external-dns --dry-run=client -o yaml | kubectl apply -
 
 # ── Create Azure DNS credentials secret in correct namespace ───────────────────
 echo "==> Creating Azure DNS credentials secret..."
-CLIENT_SECRET=$(kubectl get secret azuredns-config -n external-dns -o jsonpath='{.data.client-secret}' | base64 --decode)
+CLIENT_SECRET=$(kubectl get secret azuredns-config -n cert-manager -o jsonpath='{.data.client-secret}' | base64 --decode)
 
 kubectl create secret generic azure-config-file \
   --namespace external-dns \
