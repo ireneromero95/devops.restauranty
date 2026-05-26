@@ -9,7 +9,7 @@ spec:
   tls:
     - hosts:
         - restauranty-ij.az.ironlabs.online
-        secretName: restauranty-tls
+      secretName: restauranty-tls
   rules:
     - host: restauranty-ij.az.ironlabs.online
       http:
