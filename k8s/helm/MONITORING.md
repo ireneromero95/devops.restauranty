@@ -66,12 +66,26 @@ container_memory_usage_bytes
  
 ### Grafana
  
-Grafana displays Prometheus metrics in visual dashboards.
+Grafana is deployed inside the AKS cluster via Helm and reads metrics directly from Prometheus.
  
-**Access Grafana (Azure Managed Grafana):**
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Navigate to **Azure Managed Grafana** → `restauranty-grafana`
-3. Click the **Endpoint URL**
+**Access Grafana:**
+```bash
+kubectl port-forward svc/restauranty-grafana 3000:80
+```
+Open in browser: `http://localhost:3000`
+ 
+Default credentials:
+- **Username:** `admin`
+- **Password:** retrieve with:
+```bash
+kubectl get secret restauranty-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+```
+ 
+**Add Prometheus as Data Source:**
+1. Go to **Connections → Data sources → Add new**
+2. Select **Prometheus**
+3. Set URL to: `http://restauranty-prometheus-server:80`
+4. Click **Save & Test**
 **Recommended Dashboards to import:**
 | Dashboard | ID |
 |---|---|
