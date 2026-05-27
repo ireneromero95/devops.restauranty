@@ -47,9 +47,7 @@ frontend:
 prometheus:
   server:
     persistentVolume:
-      enabled: true
-      size: 8Gi
-      storageClass: 'default'
+      enabled: false
   extraScrapeConfigs: |
     - job_name: 'restauranty-auth'
       static_configs:
@@ -67,6 +65,8 @@ prometheus:
 grafana:
   enabled: true
   adminPassword: 'restauranty123'
+  service:
+    type: LoadBalancer
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -75,6 +75,13 @@ grafana:
           type: prometheus
           url: http://restauranty-prometheus-server:80
           isDefault: true
+          access: proxy
+          editable: true
+        - name: Loki
+          type: loki
+          url: http://restauranty-loki:3100
+          access: proxy
+          editable: true
 
 # ============================================================
 # Sonarqube
@@ -93,3 +100,17 @@ sonarqube:
     jdbcUrl: "jdbc:postgresql://sonarqube-db:5432/sonarqube"
     jdbcUsername: sonarqube
     jdbcPassword: sonarqube
+
+# ============================================================
+# Loki Stack
+# ============================================================
+loki-stack:
+  loki:
+    enabled: true
+    persistence:
+      enabled: false
+  promtail:
+    enabled: true
+    config:
+      clients:
+        - url: http://restauranty-loki:3100/loki/api/v1/push

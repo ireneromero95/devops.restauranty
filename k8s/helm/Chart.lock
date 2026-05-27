@@ -1,6 +1,18 @@
 dependencies:
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 25.20.0
 - name: sonarqube
   repository: https://SonarSource.github.io/helm-chart-sonarqube
   version: 10.7.0+3598
-digest: sha256:623eac7498c8a3521053d1ecc0291270f013238f5ef0d3fb9a3b44abd0057e67
-generated: "2026-05-27T09:44:02.591944937+01:00"
+- name: alloy
+  repository: https://grafana.github.io/helm-charts
+  version: 0.12.0
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 10.5.15
+- name: loki-stack
+  repository: https://grafana.github.io/helm-charts
+  version: 2.9.11
+digest: sha256:fd579b8a80c75eecfe8d8d601676afc490f91d5060e2a527c54ff0594fb1c4e1
+generated: "2026-05-27T14:40:37.149505601+01:00"
