@@ -39,7 +39,7 @@ frontend:
   tag: latest
   port: 80
   replicas: 1
-  serverUrl: "http://restauranty-ij.az.ironlabs.online"
+  serverUrl: 'http://restauranty-ij.az.ironlabs.online'
 
 # ============================================================
 # Prometheus
@@ -66,7 +66,7 @@ grafana:
   enabled: true
   adminPassword: 'restauranty123'
   service:
-    type: LoadBalancer
+    type: ClusterIP
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -97,7 +97,7 @@ sonarqube:
     enabled: false
   jdbcOverwrite:
     enable: true
-    jdbcUrl: "jdbc:postgresql://sonarqube-db:5432/sonarqube"
+    jdbcUrl: 'jdbc:postgresql://sonarqube-db:5432/sonarqube'
     jdbcUsername: sonarqube
     jdbcPassword: sonarqube
 
