@@ -74,15 +74,15 @@ jobs:
     # Sonarqube Analysis
     # ============================================================
     - name: SonarQube Scan
-      uses: sonarsource/sonarcloud-github-action@v3
+      uses: sonarsource/sonarqube-scan-action@v5
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       with:
         args: >
           -Dsonar.projectKey=restauranty
-          -Dsonar.organization=ireneandjoao
           -Dsonar.sources=backend/auth,backend/discounts,backend/items,client/src
-          
+
     # ============================================================
     # Configure Azure + kubectl
     # ============================================================
