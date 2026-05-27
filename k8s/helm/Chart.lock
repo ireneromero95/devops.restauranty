@@ -1,6 +1,6 @@
 dependencies:
-- name: prometheus
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 25.20.0
-digest: sha256:72139f0111cac0baa99768f57c1ecd2aeb32e469e562ac06acf1143b07abd1a6
-generated: "2026-05-25T16:46:02.092066948+01:00"
+- name: sonarqube
+  repository: https://SonarSource.github.io/helm-chart-sonarqube
+  version: 10.7.0+3598
+digest: sha256:623eac7498c8a3521053d1ecc0291270f013238f5ef0d3fb9a3b44abd0057e67
+generated: "2026-05-27T09:44:02.591944937+01:00"
