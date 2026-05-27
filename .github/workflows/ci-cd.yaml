@@ -71,6 +71,19 @@ jobs:
         tags: ireneandjoaoacr.azurecr.io/restauranty-client:latest
 
     # ============================================================
+    # Sonarqube Analysis
+    # ============================================================
+    - name: SonarQube Scan
+      uses: sonarsource/sonarcloud-github-action@v3
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectKey=restauranty
+          -Dsonar.organization=ireneandjoao
+          -Dsonar.sources=backend/auth,backend/discounts,backend/items,client/src
+          
+    # ============================================================
     # Configure Azure + kubectl
     # ============================================================
     - name: Log in to Azure
