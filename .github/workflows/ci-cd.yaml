@@ -114,3 +114,20 @@ jobs:
         kubectl rollout restart deployment/discounts
         kubectl rollout restart deployment/items
         kubectl rollout restart deployment/frontend
+
+    # ============================================================
+    # Checkov Security Scan
+    # ============================================================
+    - name: Checkov - Terraform scan
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: terraform/
+        framework: terraform
+        soft_fail: true
+
+    - name: Checkov - Kubernetes scan
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: k8s/helm/templates/
+        framework: kubernetes
+        soft_fail: true
