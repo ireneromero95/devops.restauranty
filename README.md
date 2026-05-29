@@ -9,6 +9,9 @@
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
 ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
+![Loki](https://img.shields.io/badge/Loki-F5A623?style=for-the-badge&logo=grafana&logoColor=white)
+![SonarQube](https://img.shields.io/badge/SonarQube-4E9BCD?style=for-the-badge&logo=sonarqube&logoColor=white)
+![Checkov](https://img.shields.io/badge/Checkov-4B9CD3?style=for-the-badge&logo=checkmarx&logoColor=white)
 ![NGINX](https://img.shields.io/badge/NGINX-009639?style=for-the-badge&logo=nginx&logoColor=white)
 ![Let's Encrypt](https://img.shields.io/badge/Let's_Encrypt-003A70?style=for-the-badge&logo=letsencrypt&logoColor=white)
 ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
@@ -108,6 +111,7 @@ For the frontend, use the `REACT_APP_` prefix: `REACT_APP_API_URL=http://localho
 - **Backend**: Express, Mongoose, JWT (jsonwebtoken + express-jwt), bcryptjs
 - **Image Storage**: Cloudinary (via multer-storage-cloudinary)
 - **Monitoring**: Prometheus metrics (`/metrics` endpoint on each backend service)
+- **Logging**: Loki + Promtail (log aggregation and querying)
 - **Routing**: HAProxy (local) / Kubernetes Ingress (production)
 - **Database**: MongoDB
 
@@ -115,7 +119,9 @@ For the frontend, use the `REACT_APP_` prefix: `REACT_APP_API_URL=http://localho
 
 # 🍽️ Restauranty — End-to-End DevOps Project
 
-A production-grade microservices application deployed on Azure Kubernetes Service (AKS), built as a final DevOps project. The stack includes three Node.js microservices, a React frontend, MongoDB, and a full CI/CD pipeline with monitoring, security, and HTTPS.
+A production-grade microservices application deployed on Azure Kubernetes Service (AKS), built as a final DevOps project. The stack includes three Node.js microservices, a React frontend, MongoDB, and a full CI/CD pipeline with monitoring, logging, security, and HTTPS.
+
+**Live:** [https://restauranty-ij.az.ironlabs.online](https://restauranty-ij.az.ironlabs.online)
 
 ---
 
@@ -150,7 +156,7 @@ devops.restauranty/
 Infrastructure is provisioned using **Terraform** on **Azure**:
 
 - **Resource Group**: `IreneandJoao`
-- **AKS Cluster**: 3-node cluster (`Standard_D2_v2`)
+- **AKS Cluster**: 3-node cluster (`Standard_D2s_v4`)
 - **Azure Container Registry (ACR)**: `ireneandjoaoacr.azurecr.io`
 - **Role Assignment**: AKS kubelet identity granted `AcrPull` on ACR
 
@@ -249,10 +255,18 @@ All Kubernetes resources are managed via a **Helm chart** at `k8s/helm/`.
 - `discounts-deployment.yaml` + `discounts-service.yaml`
 - `items-deployment.yaml` + `items-service.yaml`
 - `frontend-deployment.yaml` + `frontend-service.yaml`
-- `mongodb-deployment.yaml` + `mongodb-service.yaml` + `mongodb-pvc.yaml` — MongoDB runs inside the cluster with a persistent volume
 - `ingress.yaml` — NGINX Ingress with TLS
 - `network-policies.yaml` — restricts pod-to-pod traffic
 - `secrets.yaml` — Kubernetes Secrets (gitignored)
+- `sonarqube-db.yaml` — PostgreSQL for SonarQube
+
+### Helm dependencies (installed automatically)
+| Dependency | Purpose |
+|---|---|
+| `prometheus` | Metrics collection |
+| `grafana` | Metrics + log visualisation |
+| `loki-stack` | Log aggregation (Loki + Promtail) |
+| `sonarqube` | Code quality scanning |
 
 ### Routing (equivalent to HAProxy locally)
 | Path | Service |
@@ -264,16 +278,12 @@ All Kubernetes resources are managed via a **Helm chart** at `k8s/helm/`.
 
 ### Deploy manually
 ```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube
+helm repo update
+helm dependency update k8s/helm
 helm upgrade --install restauranty k8s/helm
-```
-
-### Environment-based deploys
-```bash
-# Development (minimal replicas, no TLS)
-helm upgrade --install restauranty k8s/helm -f k8s/helm/values.dev.yaml
-
-# Production (TLS enabled, production hostname)
-helm upgrade --install restauranty k8s/helm -f k8s/helm/values.prod.yaml
 ```
 
 ---
@@ -283,8 +293,10 @@ helm upgrade --install restauranty k8s/helm -f k8s/helm/values.prod.yaml
 GitHub Actions workflow at `.github/workflows/ci-cd.yaml`:
 
 **On every push/PR:**
+- Runs **Checkov** security scan on Terraform and Kubernetes manifests
 - Builds Docker images for all 4 services
 - Pushes to Azure Container Registry
+- Runs **SonarQube** code quality scan
 
 **On merge to `main`:**
 - Authenticates with Azure
@@ -296,9 +308,14 @@ GitHub Actions workflow at `.github/workflows/ci-cd.yaml`:
 ### Required GitHub Secrets
 | Secret | Description |
 |--------|-------------|
-| `AZURE_CREDENTIALS` | Azure service principal JSON |
-| `ACR_USERNAME` | ACR username (from `az acr credential show`) |
-| `ACR_PASSWORD` | ACR password (from `az acr credential show`) |
+| `AZURE_CLIENT_ID` | Service principal client ID |
+| `AZURE_CLIENT_SECRET` | Service principal client secret |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID |
+| `AZURE_TENANT_ID` | Azure tenant ID |
+| `ACR_USERNAME` | ACR username |
+| `ACR_PASSWORD` | ACR password |
+| `SONAR_TOKEN` | SonarQube authentication token |
+| `SONAR_HOST_URL` | SonarQube server URL |
 
 To get ACR credentials:
 ```bash
@@ -315,11 +332,11 @@ HTTPS is configured using **cert-manager** + **Let's Encrypt** + **external-dns*
 
 ### One-time setup (run once when provisioning the cluster, in order)
 ```bash
-bash Setup/install-cert-manager.sh
 bash Setup/install-sp-dns.sh
+bash Setup/install-nginx-controller.sh
+bash Setup/install-cert-manager.sh
 bash Setup/install-clusterissuers.sh
 bash Setup/install-external-dns-azure.sh
-bash Setup/install-nginx-controller.sh
 ```
 
 The app is accessible at: `https://restauranty-ij.az.ironlabs.online`
@@ -334,47 +351,75 @@ kubectl describe certificate restauranty-tls
 
 ## 📊 Monitoring & Logging
 
-### Prometheus
-Installed via Helm. Scrapes metrics from all microservices, which expose `/metrics` via `prom-client`.
+All monitoring and logging tools are installed as **Helm dependencies** inside the cluster.
 
-To access Prometheus UI:
+### Prometheus
+
+Scrapes metrics from all backend microservices every 15 seconds via `/metrics` endpoints.
+
 ```bash
 kubectl port-forward svc/restauranty-prometheus-server 9090:80
 ```
-Open `http://localhost:9090/targets` to see all scrape targets.
+Open `http://localhost:9090`
 
 Useful queries:
 ```promql
-# Check all microservices are up
 up{job=~"restauranty.*"}
-
-# Request rate per service
 rate(http_request_duration_seconds_count{job="restauranty-auth"}[5m])
-
-# Memory usage per container
 container_memory_usage_bytes{namespace="default", container=~"auth|discounts|items"}
-
-# CPU usage per container
-rate(container_cpu_usage_seconds_total{namespace="default", container=~"auth|discounts|items"}[5m])
 ```
 
 ### Grafana
-Installed separately via Helm, pre-configured with Prometheus as datasource.
 
-To access Grafana:
-```bash
-kubectl port-forward svc/grafana 3000:80
-```
-Open `http://localhost:3000` and log in with the admin credentials defined during setup (see `Setup/install-grafana.sh` or your `values.yaml`).
+Deployed with Prometheus and Loki pre-configured as datasources. Exposed via LoadBalancer.
 
-### Logging
-All services log to stdout — aggregated by Kubernetes. View logs with:
 ```bash
-kubectl logs -l app=auth --tail=50
-kubectl logs -l app=discounts --tail=50
-kubectl logs -l app=items --tail=50
-kubectl logs -l app=frontend --tail=50
+kubectl get svc restauranty-grafana  # get EXTERNAL-IP
 ```
+
+Open `http://<EXTERNAL-IP>` — credentials: `admin` / `restauranty123`
+
+Recommended dashboards to import:
+| Dashboard | ID |
+|---|---|
+| Kubernetes Cluster Overview | `3119` |
+| Kubernetes Pod Metrics | `6417` |
+| Node Exporter | `1860` |
+
+### Loki
+
+Collects and stores logs from all pods via **Promtail**, which runs as a DaemonSet on every node.
+
+Query logs in **Grafana → Explore → Loki**:
+```logql
+# Logs from a specific service
+{app="auth"}
+{app="discounts"}
+{app="items"}
+
+# Filter for errors
+{namespace="default"} |= "error"
+```
+
+Check Promtail is shipping logs:
+```bash
+kubectl get pods | grep promtail
+kubectl logs -l app.kubernetes.io/name=promtail --tail=20
+```
+
+### SonarQube
+
+Runs inside the cluster and analyses code quality on every CI/CD push.
+
+```bash
+kubectl get svc restauranty-sonarqube  # get EXTERNAL-IP
+```
+
+Open `http://<EXTERNAL-IP>:9000` — default credentials: `admin` / `admin`
+
+### Checkov
+
+Runs in the CI/CD pipeline (not in the cluster) and scans Terraform and Kubernetes manifests for security misconfigurations on every push.
 
 ---
 
@@ -386,8 +431,10 @@ See [SECURITY.md](./SECURITY.md) for full details. Summary:
 - **Kubernetes Secrets** — all credentials stored as K8s secrets, never in code
 - **`.gitignore`** — `secrets.yaml` and `.env` files are excluded from version control
 - **JWT tokens** — issued by `auth`, validated by `discounts` and `items` via middleware
-- **TLS** — cert-manager + Let's Encrypt, auto-renewed
+- **TLS** — cert-manager + Let's Encrypt, auto-renewed every 60 days
 - **ACR** — AKS uses a managed identity with `AcrPull` role only
+- **Checkov** — IaC security scanning on every push
+- **SonarQube** — code quality gate on every push (Quality Gate: Passed)
 
 ---
 
@@ -412,11 +459,17 @@ kubectl logs -l app=auth --tail=50
 # Manually restart a deployment
 kubectl rollout restart deployment/auth
 
-# Check Prometheus targets
+# Access Prometheus
 kubectl port-forward svc/restauranty-prometheus-server 9090:80
 
-# Check Grafana
-kubectl port-forward svc/grafana 3000:80
+# Access Grafana (or use EXTERNAL-IP directly)
+kubectl get svc restauranty-grafana
+
+# Access SonarQube
+kubectl get svc restauranty-sonarqube
+
+# Check Loki logs
+kubectl logs -l app.kubernetes.io/name=promtail --tail=20
 ```
 
 ---
@@ -425,3 +478,7 @@ kubectl port-forward svc/grafana 3000:80
 
 - **Irene Romero Martínez** — [@ireneromero95](https://github.com/ireneromero95)
 - **João Ribeiro** — [@joaodmorgadoribeiro-del](https://github.com/joaodmorgadoribeiro-del)
+
+---
+
+*Built as a final project for the **Ironhack Cloud & DevOps Bootcamp** 🚀*
